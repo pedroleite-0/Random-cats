@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Cats</title>
+    <style>
+        /* CSS para centralizar a imagem e deixar a página bonita */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #fdf6e3;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 { color: #333; }
+        
+        /* Define o tamanho adequado para a imagem */
+        #cat-image {
+            max-width: 500px;
+            max-height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: none; /* Fica oculta até carregar */
+            margin-top: 20px;
+        }
+        
+        .loading { font-size: 1.2rem; color: #666; }
+        .error { color: #d9534f; font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Gatinho Aleatório do Dia 🐾</h1>
+    
+    <div id="container">
+        <p id="loading-msg" class="loading">Buscando um gatinho fofo na internet...</p>
+        <img id="cat-image" src="" alt="Imagem aleatória de um gato">
+        <p id="error-msg" class="error" style="display: none;"></p>
+    </div>
+
+    <script>
+        // Função assíncrona para buscar a imagem usando fetch()
+        async function obterGatinho() {
+            const imgElement = document.getElementById('cat-image');
+            const loadingMsg = document.getElementById('loading-msg');
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                // Faz a requisição GET para a API pública
+                const resposta = await fetch('https://api.thecatapi.com/v1/images/search');
+                
+                // Se a resposta da API der erro (ex: erro 404, 500), forçamos cair no 'catch'
+                if (!resposta.ok) {
+                    throw new Error('Falha na comunicação com a API');
+                }
+                
+                // Converte a resposta para JSON
+                const dados = await resposta.json();
+                
+                // A API retorna um Array, a imagem está no primeiro item [0], na propriedade 'url'
+                const urlDaImagem = dados[0].url;
+
+                // Atribui a URL ao atributo 'src' da tag <img>
+                imgElement.src = urlDaImagem;
+                
+                // Quando a imagem terminar de carregar, escondemos o texto de "Buscando..." e mostramos a imagem
+                imgElement.onload = () => {
+                    loadingMsg.style.display = 'none';
+                    imgElement.style.display = 'block';
+                };
+
+            } catch (erro) {
+                // Caso falhe (sem internet, API fora do ar, etc), exibe a mensagem de erro amigável
+                console.error("Erro detectado:", erro);
+                loadingMsg.style.display = 'none';
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "Ops! 😿 Não foi possível carregar o gatinho agora. Recarregue a página e tente novamente.";
+            }
+        }
+
+        // Executa a função imediatamente assim que a página é carregada
+        window.onload = obterGatinho;
+    </script>
+</body>
+</html>
